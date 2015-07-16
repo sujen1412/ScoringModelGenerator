@@ -2,9 +2,13 @@ package com.sujen.nutchscoring.termvector;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,7 +81,7 @@ public class TermVectorGenerator
     tokenStream = documentTokenizer.applyStopFilter(tokenStream, stopSet);
     tokenStream = documentTokenizer.performPorterStemming(tokenStream);
     DocumentVector docVect = new DocumentVector(tokenStream);
-//    docVect.printTerms();
+    //    docVect.printTerms();
     return docVect;
   }
 
@@ -125,23 +129,50 @@ public class TermVectorGenerator
   }
 
   public DocumentVector createGoldStandardDocVect(String corpusPath, String stopWordFilePath){
-    stopSet = populateStopWords(stopWordFilePath);
-    File file = new File(corpusPath);
-    if(file.exists()){
-      if(file.isDirectory()){
-        LOG.info("User provided directory : {}", file.toString());
-        for(File fileEntry: file.listFiles()){
-          LOG.info("Processing file : {}",fileEntry.toString());
-          updateTFIDF(createDocVect(fileEntry));
-          totalDocs++;
-        }
+    File model = new File("cosine.model");
+    DocumentVector docVect = new DocumentVector();
+    Map<String, Integer> termVect = null;
+    if(model.exists()){
+      FileInputStream fileIn;
+      try {
+        fileIn = new FileInputStream(model);
+        ObjectInputStream in = new ObjectInputStream(fileIn);
+        termVect = (Map<String, Integer>) in.readObject();
+        LOG.info("Found a model file at {}",model.getAbsolutePath());
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
     }
-    DocumentVector docVect = new DocumentVector();
-    docVect.setTermVect(createTermFreqVectFromTFIDF(tfidfVector));
+    else {
+      stopSet = populateStopWords(stopWordFilePath);
+      File file = new File(corpusPath);
+      if(file.exists()){
+        if(file.isDirectory()){
+          LOG.info("User provided directory : {}", file.toString());
+          for(File fileEntry: file.listFiles()){
+            LOG.info("Processing file : {}",fileEntry.toString());
+            updateTFIDF(createDocVect(fileEntry));
+            totalDocs++;
+          }
+        }
+      }
+      termVect = createTermFreqVectFromTFIDF(tfidfVector);
+
+      FileOutputStream fileOut;
+      try {
+        fileOut = new FileOutputStream(model);
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(termVect);
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }     
+    }
+    docVect.setTermVect(termVect);
     return docVect;
   }
-  
+
   private Map<String, Integer> createTermFreqVectFromTFIDF(Map<String, TFIDFObject> tfidfVector){
     Map<String, Integer> termFreq = new HashMap<String, Integer>();
     for(Entry<String, TFIDFObject> pair: tfidfVector.entrySet())

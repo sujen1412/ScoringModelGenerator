@@ -1,6 +1,7 @@
 package com.sujen.nutchscoring.cosine;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -14,6 +15,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.CharArraySet;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
+
 
 import com.sujen.nutchscoring.termvector.DocumentTokenizer;
 import com.sujen.nutchscoring.termvector.DocumentVector;
@@ -66,10 +68,10 @@ public class CosineSimilarity {
     }
     System.out.println(sb.toString());
     File output = new File("scores.csv");
-    FileWriter writer;
     try {
-      writer = new FileWriter(output);
-      writer.write(sb.toString());
+      FileWriter writer = new FileWriter(output);
+      BufferedWriter bw = new BufferedWriter(writer);
+      bw.write(sb.toString());
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -114,6 +116,11 @@ public class CosineSimilarity {
   }
 
   public static void main(String[] args) { 
+    
+    if(args.length<3){
+      System.out.println("Usage : corpusPAth stopWordPAth documentsPath");
+      System.exit(0);
+    }
     String modelFile = args[0];
     String stopWordFile = args[1];
     stopSet = populateStopWords(stopWordFile);
@@ -129,7 +136,6 @@ public class CosineSimilarity {
 //    }
     File folder = new File(documentsPath);
     File files[] = folder.listFiles();
-    System.out.print(Arrays.toString(files));
     generateSimilarityScore(files);
   }
 }
