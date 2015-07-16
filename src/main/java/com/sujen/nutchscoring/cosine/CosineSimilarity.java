@@ -13,8 +13,8 @@ import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.util.CharArraySet;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import com.sujen.nutchscoring.termvector.DocumentTokenizer;
@@ -26,7 +26,7 @@ import com.sujen.nutchscoring.termvector.TermVectorGenerator;
 public class CosineSimilarity {
 
   private static Map<String, TFIDFObject> tfidfVector = new HashMap<String, TFIDFObject>();
-//  private static final Logger LOG = LoggerFactory.getLogger(CosineSimilarity.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CosineSimilarity.class);
   private static int totalDocs = 0;
   private static CharArraySet stopSet;
   private static DocumentVector goldStandardDocVect;
@@ -60,13 +60,16 @@ public class CosineSimilarity {
   private static void generateSimilarityScore(File[] files){
     StringBuffer sb = new StringBuffer();
     sb.append("filename, score\n");
+    System.out.println("FileName, Score");
     for(File f : files){
+      LOG.info("Processing file {}",f.getAbsolutePath());
       DocumentVector docVect = createDocVect(f);
       double score = calculateCosineSimilarity(goldStandardDocVect, docVect);
       sb.append(""+f.getAbsolutePath()+","+ score+ "\n");
-//      LOG.info("{} score: {}", f.getAbsolutePath(), score+"");
+      LOG.info("{} score: {}", f.getAbsolutePath(), score+"");
+      System.out.println(f.getAbsolutePath() + "," + score+"");
     }
-    System.out.println(sb.toString());
+//    System.out.println(sb.toString());
     File output = new File("scores.csv");
     try {
       FileWriter writer = new FileWriter(output);
