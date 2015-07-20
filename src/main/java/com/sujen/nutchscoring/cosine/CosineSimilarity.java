@@ -70,8 +70,10 @@ public class CosineSimilarity {
       LOG.info("{} score: {}", f.getAbsolutePath(), score+"");
       System.out.println(f.getAbsolutePath() + "," + score+"");
     }
-//    System.out.println(sb.toString());
-    File output = new File("scores.csv");
+
+    String parent =  files[0].getParent();
+    String scoreFile = parent.substring(parent.lastIndexOf("/")+1);
+    File output = new File(scoreFile+".log.out");
     try {
       FileWriter writer = new FileWriter(output);
       BufferedWriter bw = new BufferedWriter(writer);
