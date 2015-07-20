@@ -12,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.TokenStream;
@@ -157,7 +159,7 @@ public class TermVectorGenerator
           }
         }
       }
-      termVect = createTermFreqVectFromTFIDF(tfidfVector);
+      termVect = createTermFreqVectFromTFIDF(tfidfVector, totalDocs);
 
       FileOutputStream fileOut;
       try {
@@ -173,10 +175,25 @@ public class TermVectorGenerator
     return docVect;
   }
 
-  private Map<String, Integer> createTermFreqVectFromTFIDF(Map<String, TFIDFObject> tfidfVector){
+  private int getTFIDFValue(int termCount, int documentCount, int totalDocs){
+    double idf = Math.log(totalDocs/documentCount);
+    System.out.println("log : " + idf);
+    return (int) ((int)termCount*idf);
+  }
+  
+  private Map<String, Integer> createTermFreqVectFromTFIDF(Map<String, TFIDFObject> tfidfVector, int totalDocs){
     Map<String, Integer> termFreq = new HashMap<String, Integer>();
-    for(Entry<String, TFIDFObject> pair: tfidfVector.entrySet())
-      termFreq.put(pair.getKey(), pair.getValue().getTermCount());
+    System.out.println(tfidfVector);
+    System.out.println(tfidfVector.size());
+    for(Entry<String, TFIDFObject> pair: tfidfVector.entrySet()){
+      int documentCount = pair.getValue().getDocumentCount();
+      if(documentCount != 1 && pair.getKey().matches("[a-zA-Z]+")){
+        termFreq.put(pair.getKey(), pair.getValue().getTermCount());
+      }
+      
+    }
+    System.out.println(termFreq.size());
+    System.out.println(termFreq);
     return termFreq;
   }
 }
