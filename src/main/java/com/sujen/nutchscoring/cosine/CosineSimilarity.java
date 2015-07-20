@@ -61,8 +61,9 @@ public class CosineSimilarity {
     StringBuffer sb = new StringBuffer();
     sb.append("filename, score\n");
     System.out.println("FileName, Score");
+    int counter = files.length-1;
     for(File f : files){
-      LOG.info("Processing file {}",f.getAbsolutePath());
+      LOG.info("Processing file {}, remaining - {} ",f.getAbsolutePath(), counter--);
       DocumentVector docVect = createDocVect(f);
       double score = calculateCosineSimilarity(goldStandardDocVect, docVect);
       sb.append(""+f.getAbsolutePath()+","+ score+ "\n");
@@ -79,7 +80,8 @@ public class CosineSimilarity {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    System.out.println(output.getAbsolutePath());
+//    System.out.println(output.getAbsolutePath());
+    LOG.info("Score file stored at : {} ", output.getAbsolutePath());
   }
   
   private static double calculateCosineSimilarity(DocumentVector docVect1, DocumentVector docVect2){
@@ -121,7 +123,7 @@ public class CosineSimilarity {
   public static void main(String[] args) { 
     
     if(args.length<3){
-      System.out.println("Usage : corpusPAth stopWordPAth documentsPath");
+      System.out.println("Usage : modelPath stopWordPath documentsPath");
       System.exit(0);
     }
     String modelFile = args[0];
@@ -139,6 +141,7 @@ public class CosineSimilarity {
 //    }
     File folder = new File(documentsPath);
     File files[] = folder.listFiles();
+    LOG.info("Processing path {}, found {} documents",folder.getAbsolutePath(), files.length);
     generateSimilarityScore(files);
   }
 }
